@@ -124,15 +124,6 @@
     <Folder Include="src" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\debug.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\debug.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\main.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\reciter.c">
       <SubType>compile</SubType>
     </Compile>
