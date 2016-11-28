@@ -91,8 +91,8 @@ void Init()
 	SetMouthThroat( mouth, throat);
 
 	bufferpos = 0;
-	// TODO, check for free the memory, 10 seconds of output should be more than enough
-	buffer = malloc(22050*10); 
+
+	buffer = malloc(22050*10); // TODO: Rework this to use CircularBuffer instead, to cope with AVR memory constraints.
 
 	/*
 	freq2data = &mem[45136];
