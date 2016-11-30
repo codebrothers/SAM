@@ -5,6 +5,8 @@
 #include "render.h"
 #include "RenderTabs.h"
 
+#include "CircularBuffer.h"
+
 #include "debug.h"
 extern int debug;
 
@@ -46,82 +48,79 @@ unsigned char sampledConsonantFlag[256]; // tab44800
 void AddInflection(unsigned char mem48, unsigned char phase1);
 unsigned char trans(unsigned char mem39212, unsigned char mem39213);
 
+// contains the final sample buffer
+extern CircularBuffer *sampleBuffer;
 
-// contains the final soundbuffer
-extern int bufferpos;
-extern char *buffer;
-
-
-
-//timetable for more accurate c64 simulation
+//timetable for more accurate c64 simulation  // Chris: What is this?
 int timetable[5][5] =
 {
 	{162, 167, 167, 127, 128},
-	{226, 60, 60, 0, 0},
-	{225, 60, 59, 0, 0},
-	{200, 0, 0, 54, 55},
-	{199, 0, 0, 54, 54}
+	{226, 60,  60,  0,   0  },
+	{225, 60,  59,  0,   0  },
+	{200, 0,   0,   54,  55 },
+	{199, 0,   0,   54,  54 }
 };
 
 void Output(int index, unsigned char A)
 {
 	static unsigned oldtimetableindex = 0;
 	int k;
-	bufferpos += timetable[oldtimetableindex][index];
+	//bufferpos += timetable[oldtimetableindex][index]; // Chris: Under what circumstances are we skipping samples?  Does this ever go backwards?
 	oldtimetableindex = index;
-	// write a little bit in advance
-	for(k=0; k<5; k++)
-		buffer[bufferpos/50 + k] = (A & 15)*16;
+	// write a little bit in advance  // Chris: Is this something that is already taken care of by CircularBuffer?
+	//for(k=0; k<5; k++)
+	//	buffer[bufferpos/50 + k] = (A & 15)*16;
+
+	uint8_t sample =  (A & 15)*16;
+	//circularBuffer_writeByte( buffer, sample );
 }
-
-
-
-
-
-
 
 //written by me because of different table positions.
 // mem[47] = ...
-// 168=pitches
-// 169=frequency1
-// 170=frequency2
-// 171=frequency3
-// 172=amplitude1
-// 173=amplitude2
-// 174=amplitude3
-unsigned char Read(unsigned char p, unsigned char Y)
+typedef enum Control
 {
-	switch(p)
+	cPitch      = 168,
+	cFrequency1 = 169,
+	cFrequency2 = 170,
+	cFrequency3 = 171,
+	cAmplitude1 = 172,
+	cAmplitude2 = 173,
+	cAmplitude3 = 174
+
+} Control;
+
+unsigned char Read(Control tablePosition, unsigned char Y)
+{
+	switch(tablePosition)
 	{
-	case 168: return pitches[Y];
-	case 169: return frequency1[Y];
-	case 170: return frequency2[Y];
-	case 171: return frequency3[Y];
-	case 172: return amplitude1[Y];
-	case 173: return amplitude2[Y];
-	case 174: return amplitude3[Y];
+		case cPitch     : return pitches   [Y];
+		case cFrequency1: return frequency1[Y];
+		case cFrequency2: return frequency2[Y];
+		case cFrequency3: return frequency3[Y];
+		case cAmplitude1: return amplitude1[Y];
+		case cAmplitude2: return amplitude2[Y];
+		case cAmplitude3: return amplitude3[Y];
+
+		default: printf("Error reading from tables"); return 0;
 	}
-	printf("Error reading to tables");
-	return 0;
 }
 
-void Write(unsigned char p, unsigned char Y, unsigned char value)
+void Write(Control tablePosition, unsigned char Y, unsigned char value)
 {
 
-	switch(p)
+	switch(tablePosition)
 	{
-	case 168: pitches[Y] = value; return;
-	case 169: frequency1[Y] = value;  return;
-	case 170: frequency2[Y] = value;  return;
-	case 171: frequency3[Y] = value;  return;
-	case 172: amplitude1[Y] = value;  return;
-	case 173: amplitude2[Y] = value;  return;
-	case 174: amplitude3[Y] = value;  return;
+		case cPitch     : pitches   [Y] = value;  break;
+		case cFrequency1: frequency1[Y] = value;  break;
+		case cFrequency2: frequency2[Y] = value;  break;
+		case cFrequency3: frequency3[Y] = value;  break;
+		case cAmplitude1: amplitude1[Y] = value;  break;
+		case cAmplitude2: amplitude2[Y] = value;  break;
+		case cAmplitude3: amplitude3[Y] = value;  break;
+
+		default: printf("Error writing to tables\n");
 	}
-	printf("Error writing to tables\n");
 }
-
-
 
 // -------------------------------------------------------------------------
 //Code48227
@@ -898,14 +897,14 @@ pos48159:
 			{
 				X = 26;
 				// mem[54296] = X;
-				bufferpos += 150;
-				buffer[bufferpos/50] = (X & 15)*16;
+				//bufferpos += 150;
+				//buffer[bufferpos/50] = (X & 15)*16;
 			} else
 			{
 				//mem[54296] = 6;
 				X=6; 
-				bufferpos += 150;
-				buffer[bufferpos/50] = (X & 15)*16;
+				//bufferpos += 150;
+				//buffer[bufferpos/50] = (X & 15)*16;
 			}
 
 			for(X = wait2; X>0; X--); //wait

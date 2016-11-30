@@ -5,6 +5,7 @@
 #include "sam.h"
 #include "render.h"
 #include "SamTabs.h"
+#include "CircularBuffer.h"
 
 char input[256]; //tab39445
 //standard sam sound
@@ -37,13 +38,7 @@ unsigned char phonemeIndexOutput[60]; //tab47296
 unsigned char stressOutput[60]; //tab47365
 unsigned char phonemeLengthOutput[60]; //tab47416
 
-
-
-
-// contains the final soundbuffer
-int bufferpos=0;
-char *buffer = NULL;
-
+CircularBuffer *buffer = NULL;
 
 void SetInput(char *_input)
 {
@@ -60,8 +55,8 @@ void SetPitch(unsigned char _pitch) {pitch = _pitch;};
 void SetMouth(unsigned char _mouth) {mouth = _mouth;};
 void SetThroat(unsigned char _throat) {throat = _throat;};
 void EnableSingmode() {singmode = 1;};
-char* GetBuffer(){return buffer;};
-int GetBufferLength(){return bufferpos;};
+char* GetBuffer(){return (char*)NULL; };//return buffer;};
+int GetBufferLength(){return 0;};//bufferpos;};
 
 void Init();
 int Parser1();
@@ -90,9 +85,7 @@ void Init()
 	int i;
 	SetMouthThroat( mouth, throat);
 
-	bufferpos = 0;
-
-	buffer = malloc(22050*10); // TODO: Rework this to use CircularBuffer instead, to cope with AVR memory constraints.
+	buffer = circularBuffer_create(512); // TODO: Rework this to use CircularBuffer instead, to cope with AVR memory constraints.
 
 	/*
 	freq2data = &mem[45136];
