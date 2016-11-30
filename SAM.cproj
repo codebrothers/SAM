@@ -124,15 +124,6 @@
     <Folder Include="src" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\reciter.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\reciter.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ReciterTabs.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\render.c">
       <SubType>compile</SubType>
     </Compile>
